@@ -4,7 +4,7 @@ Interfaz web para gestionar tareas, desarrollada con **React** + **Vite**, consu
 
 ---
 
-## 💻 Presupuestos tecnológicos
+## 💻 Tecnologías
 
 - **Framework**: React (con Vite)
 - **Lenguajes**: JavaScript o TypeScript (según tu implementación)
