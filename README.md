@@ -29,3 +29,4 @@ Asegúrate de tener instalado:
    ```bash
    git clone https://github.com/SanchezLanchaCarlos/Task-Manager-Front.git
    cd Task-Manager-Front
+   npm install
