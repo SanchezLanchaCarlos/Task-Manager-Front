@@ -4,11 +4,13 @@ import { Project, getAllProjects, createProject } from '../api/projects';
 import { getAllUsers, User } from '../api/users';
 import CreateProjectModal from '../components/projects/CreateProjectModal';
 import { Link } from 'react-router-dom';
+import { getAllTasks, Task } from '../api/tasks';
 
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,12 @@ export default function Home() {
       setUsers(data);
     }).catch(error => {
       console.error("Error fetching users:", error);
+    });
+
+    getAllTasks().then(data => {
+      setTasks(data);
+    }).catch(error => {
+      console.error("Error fetching tasks:", error);
     });
 
   }, []);
@@ -67,8 +75,8 @@ export default function Home() {
 
   const stats = [
     { icon: FolderPlus, label: "Proyectos Activos", value: projects.length.toString() },
-    { icon: CheckCircle, label: "Tareas Completadas", value: "84" },
-    { icon: TrendingUp, label: "Productividad", value: "92%" },
+    { icon: CheckCircle, label: "Tareas Completadas", value: tasks.filter(task => task.status === 'FINALIZADA').length.toString() },
+    { icon: TrendingUp, label: "Productividad", value: `${(tasks.filter(task => task.status === 'FINALIZADA').length / tasks.length * 100)}%` },
     { icon: Users, label: "Colaboradores", value: users.length.toString() },
   ];
 
