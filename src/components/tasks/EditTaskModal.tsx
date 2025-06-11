@@ -1,26 +1,28 @@
-import { useState } from 'react';
-import { Plus, Loader2, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Loader2, ChevronDown } from 'lucide-react';
 import { Task } from '../../api/tasks';
 import { User } from '../../api/users';
 import { Project } from '../../api/projects';
 
-interface CreateTaskModalProps {
+interface EditTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (title: string, description: string, status: Task['status'], priority: Task['priority'], dueDate: string, assignedTo: string, projectId: string) => Promise<void>;
+  onSubmit: (taskId: string, title: string, description: string, status: Task['status'], priority: Task['priority'], dueDate: string, assignedTo: string, projectId: string) => Promise<void>;
   loading: boolean;
   availableUsers: User[];
   availableProjects: Project[];
+  task: Task | null;
 }
 
-export default function CreateTaskModal({ 
+export default function EditTaskModal({ 
   isOpen, 
   onClose, 
   onSubmit, 
   loading,
   availableUsers,
-  availableProjects 
-}: CreateTaskModalProps) {
+  availableProjects,
+  task
+}: EditTaskModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Task['status']>("NUEVA");
@@ -29,27 +31,31 @@ export default function CreateTaskModal({
   const [assignedTo, setAssignedTo] = useState("");
   const [projectId, setProjectId] = useState("");
 
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setDescription(task.description || "");
+      setStatus(task.status);
+      setPriority(task.priority);
+      setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "");
+      setAssignedTo(task.assigneeId ? String(task.assigneeId) : "");
+      setProjectId(task.projectId ? String(task.projectId) : "");
+    }
+  }, [task]);
+
   const handleSubmit = async () => {
-    if (!title.trim() || !assignedTo || !projectId) return;
-    await onSubmit(title, description, status, priority, dueDate, assignedTo, projectId);
-    setTitle("");
-    setDescription("");
-    setStatus("NUEVA");
-    setPriority("NORMAL");
-    setDueDate("");
-    setAssignedTo("");
-    setProjectId("");
+    if (!task || !title.trim() || !assignedTo || !projectId) return;
+    await onSubmit(task.id, title, description, status, priority, dueDate, assignedTo, projectId);
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !task) return null;
 
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl p-6 w-full max-w-2xl transform transition-all duration-300 scale-100">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-800 via-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
-            <Plus className="w-6 h-6 text-purple-600" />
-            Crear Nueva Tarea
+            Editar Tarea
           </h2>
         </div>
 
@@ -199,13 +205,10 @@ export default function CreateTaskModal({
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Creando...
+                  Guardando...
                 </>
               ) : (
-                <>
-                  <Plus className="w-5 h-5" />
-                  Crear Tarea
-                </>
+                'Guardar Cambios'
               )}
             </button>
           </div>

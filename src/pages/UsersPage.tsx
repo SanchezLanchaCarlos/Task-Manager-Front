@@ -68,8 +68,16 @@ export default function UsersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    setUserToDelete(id);
-    setIsDeleteModalOpen(true);
+    setLoading(true);
+    try {
+      await deleteUser(id);
+      setUsers((prev) => prev.filter((user) => user.id !== id));
+      setSuccessMessage('Usuario eliminado con éxito');
+    } catch (error) {
+      setError('Error al eliminar el usuario');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEdit = async (id: string, userData: Partial<User>) => {

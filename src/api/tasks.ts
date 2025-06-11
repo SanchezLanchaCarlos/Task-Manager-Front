@@ -1,16 +1,16 @@
 import api from "./axios";
 
-export type Task = {
-    id: number;
+export interface Task {
+    id: string;
     title: string;
     description?: string;
     status: 'NUEVA' | 'EN_CURSO' | 'FINALIZADA';
     priority: 'BAJA' | 'NORMAL' | 'ALTA';
     dueDate?: string;
-    userId: string;
-    projectId: string;
     createdAt?: string;
-};
+    assigneeId?: string;
+    projectId?: string;
+}
 
 export async function getAllTasks(): Promise<Task[]> {
     try {
@@ -54,30 +54,43 @@ export async function getTaskById(id: string): Promise<Task> {
   
 export async function createTask(task: Partial<Task>): Promise<Task> {
     try {
-        const response = await api.post('/tasks/', JSON.stringify(task));
+        const response = await api.post('/tasks', task);
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error en createTask:', error);
+        if (error.response?.data?.message) {
+            throw new Error(error.response.data.message);
+        }
         throw new Error('Error al crear la tarea');
     }
 }
 
-export async function updateTask(id: string, task: Partial<Task>): Promise<Task> {
+export const updateTask = async (taskId: string, taskData: Partial<Task>): Promise<Task> => {
     try {
-        const response = await api.put(`/tasks/${id}`, JSON.stringify(task));
+        const response = await api.put(`/tasks/${taskId}`, taskData);
         return response.data;
     } catch (error) {
-        console.error('Error en updateTask:', error);
-        throw new Error('Error al actualizar la tarea');
+        console.error('Error al actualizar la tarea:', error);
+        throw error;
     }
-}
+};
   
-export async function deleteTask(id: number): Promise<void> {
+export async function deleteTask(id: string): Promise<void> {
     try {
         await api.delete(`/tasks/${id}`);
     } catch (error) {
         console.error('Error en deleteTask:', error);
         throw new Error('Error al eliminar la tarea');
+    }
+}
+
+export async function getTaskByProjectId(projectId: string): Promise<Task[]> {
+    try {
+        const response = await api.get(`/tasks/project/${projectId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error en getTaskByProjectId:', error);
+        throw new Error('Error al obtener las tareas');
     }
 }
   

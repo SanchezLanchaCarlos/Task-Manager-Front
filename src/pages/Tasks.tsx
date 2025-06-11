@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Task, getAllTasks, createTask, deleteTask } from "../api/tasks";
+import { Task, getAllTasks, createTask, deleteTask, updateTask } from "../api/tasks";
 import { 
   Plus, 
   CheckCircle, 
@@ -7,34 +7,53 @@ import {
   Search,
 } from 'lucide-react';
 import CreateTaskModal from '../components/tasks/CreateTaskModal';
-import { TaskGrid } from '../components/tasks/TaskGrid';
-import { User } from "../api/users";
+import DeleteTaskDialog from '../components/tasks/DeleteTaskDialog';
+import TaskGrid from "../components/tasks/TaskGrid";
+import { User, getAllUsers } from "../api/users";
+import { Project, getAllProjects } from "../api/projects";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const authUser: User = JSON.parse(localStorage.getItem("authUser") ?? "{}");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState("");
+  const { user } = useAuth();
   const projectId = useParams().id;
 
   useEffect(() => {
+    if (!user) {
+      setError("No hay usuario autenticado");
+      return;
+    }
+
     setIsVisible(true);
     setLoading(true);
-    getAllTasks()
-      .then((tasks) => {
-        setTasks(tasks);
+    Promise.all([
+      getAllTasks(),
+      getAllUsers(),
+      getAllProjects()
+    ])
+      .then(([tasksData, usersData, projectsData]) => {
+        setTasks(tasksData);
+        setUsers(usersData);
+        setProjects(projectsData);
         setLoading(false);
       })
-      .catch(() => {
-        setError('Error al cargar las tareas');
+      .catch((error) => {
+        console.error('Error al cargar datos:', error);
+        setError('Error al cargar los datos');
         setLoading(false);
       });
-  }, []);
+  }, [user]);
 
   // Auto hide messages after 3 seconds
   useEffect(() => {
@@ -47,40 +66,106 @@ export default function Tasks() {
     }
   }, [successMessage, error]);
 
-  const handleCreate = async (title: string, description: string, status: string, priority: string, dueDate: string) => {
-    if (!title.trim()) return;
+  const handleCreate = async (title: string, description: string, status: string, priority: string, dueDate: string, assignedTo: string, projectId: string) => {
+    if (!title.trim() || !assignedTo || !projectId) {
+      setError("Por favor, completa todos los campos");
+      return;
+    }
+
+    if (!user) {
+      setError("No hay usuario autenticado");
+      return;
+    }
+
     setLoading(true);
     try {
-      const newTask = await createTask({ 
+      const newTask = await createTask({
         title, 
         description,
         status: status as Task['status'],
         priority: priority as Task['priority'],
         dueDate,
-        userId: authUser.id,
-        projectId: projectId,
+        assigneeId: assignedTo,
+        projectId
       });
       setTasks((prev) => [...prev, newTask]);
       setSuccessMessage("Tarea creada con éxito");
       setIsModalOpen(false);
-    } catch (error) {
-      setError("Error al crear la tarea");
+    } catch (error: any) {
+      console.error('Error al crear la tarea:', error);
+      setError(error.response?.data?.message || "Error al crear la tarea");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (loading) return;
+  const handleDeleteClick = async (id: string) => {
+    setTaskToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!taskToDelete || loading) return;
+    
     setLoading(true);
     try {
-      await deleteTask(id);
-      setTasks((prev) => prev.filter((task) => task.id !== id));
+      await deleteTask(taskToDelete);
+      setTasks((prev) => prev.filter((task) => task.id !== taskToDelete));
       setSuccessMessage("Tarea eliminada con éxito");
+      setIsDeleteDialogOpen(false);
+      setTaskToDelete("");
     } catch (error) {
       setError("Error al eliminar la tarea");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTask(id);
+      const updatedTasks = await getAllTasks();
+      setTasks(updatedTasks);
+    } catch (error) {
+      console.error('Error al eliminar la tarea:', error);
+    }
+  };
+
+  const handleComplete = async (id: string) => {
+    try {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      
+      const updatedTask = {
+        ...task,
+        status: 'FINALIZADA' as Task['status']
+      };
+      
+      await updateTask(id, updatedTask);
+      const updatedTasks = await getAllTasks();
+      setTasks(updatedTasks);
+      setSuccessMessage("Tarea completada con éxito");
+    } catch (error) {
+      console.error('Error al completar la tarea:', error);
+      setError("Error al completar la tarea");
+    }
+  };
+
+  const handleEdit = async (taskId: string, title: string, description: string, status: Task['status'], priority: Task['priority'], dueDate: string, assignedTo: string, projectId: string) => {
+    try {
+      await updateTask(taskId, {
+        title,
+        description,
+        status,
+        priority,
+        dueDate,
+        assigneeId: assignedTo,
+        projectId: projectId
+      });
+      const updatedTasks = await getAllTasks();
+      setTasks(updatedTasks);
+    } catch (error) {
+      console.error('Error al editar la tarea:', error);
     }
   };
 
@@ -155,7 +240,11 @@ export default function Tasks() {
               loading={loading}
               searchTerm={searchTerm}
               isVisible={isVisible}
-              onDelete={handleDelete}
+              onDelete={handleDeleteClick}
+              onEdit={handleEdit}
+              onComplete={handleComplete}
+              availableUsers={users}
+              availableProjects={projects}
             />
           </div>
         </div>
@@ -165,6 +254,19 @@ export default function Tasks() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleCreate}
+          loading={loading}
+          availableUsers={users}
+          availableProjects={projects}
+        />
+
+        {/* Delete Task Dialog */}
+        <DeleteTaskDialog
+          isOpen={isDeleteDialogOpen}
+          onClose={() => {
+            setIsDeleteDialogOpen(false);
+            setTaskToDelete("");
+          }}
+          onConfirm={handleDeleteConfirm}
           loading={loading}
         />
       </div>

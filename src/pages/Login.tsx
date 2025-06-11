@@ -23,16 +23,33 @@ export default function Login() {
   }, []);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setError('Por favor ingresa email y contraseña');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      const { token, user } = await loginApi(email, password); // Llamada real al backend
-      login(token, user); // Guarda token y usuario en contexto/localStorage
-      navigate('/'); // Redirige al usuario a la página principal
-    } catch (e) {
-      setError('Credenciales inválidas o error de red');
+      const { token, user } = await loginApi(email, password);
+      if (!token || !user) {
+        throw new Error('Respuesta inválida del servidor');
+      }
+      login(token, user);
+      navigate('/');
+    } catch (e: any) {
+      console.error('Error en login:', e);
+      if (e.message === 'Error en el login') {
+        setError('Credenciales inválidas');
+      } else if (e.message === 'Respuesta inválida del servidor') {
+        setError('Error en la respuesta del servidor');
+      } else if (e.message === 'Failed to fetch') {
+        setError('No se pudo conectar con el servidor. Verifica que esté en ejecución.');
+      } else {
+        setError('Error al conectar con el servidor');
+      }
     } finally {
       setIsLoading(false);
     }

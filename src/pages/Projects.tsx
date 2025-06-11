@@ -10,9 +10,14 @@ import CreateProjectModal from '../components/projects/CreateProjectModal';
 import { ProjectGrid } from '../components/projects/ProjectGrid';
 import { DeleteProjectDialog } from '../components/projects/DeleteProjectDialog';
 import { User } from "../api/users";
+import { getProjectMembers } from "../api/members";
+
+interface ProjectWithMembers extends Project {
+  memberCount: number;
+}
 
 export default function Projects() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectWithMembers[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -23,18 +28,30 @@ export default function Projects() {
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const authUser: User = JSON.parse(localStorage.getItem("authUser") ?? "{}");
 
+  const loadProjectsWithMembers = async () => {
+    setLoading(true);
+    try {
+      const projectsData = await getAllProjects();
+      const projectsWithMembers = await Promise.all(
+        projectsData.map(async (project) => {
+          const members = await getProjectMembers(project.id);
+          return {
+            ...project,
+            memberCount: members.length
+          };
+        })
+      );
+      setProjects(projectsWithMembers);
+    } catch (error) {
+      setError('Error al cargar los proyectos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     setIsVisible(true);
-    setLoading(true);
-    getAllProjects()
-      .then((projects) => {
-        setProjects(projects);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Error al cargar los proyectos');
-        setLoading(false);
-      });
+    loadProjectsWithMembers();
   }, []);
 
   // Auto hide messages after 3 seconds
@@ -61,7 +78,8 @@ export default function Projects() {
         description,
         ownerId: authUser.id,
       });
-      setProjects((prev) => [...prev, newProject]);
+      const members = await getProjectMembers(newProject.id);
+      setProjects((prev) => [...prev, { ...newProject, memberCount: members.length }]);
       setSuccessMessage("Proyecto creado con éxito");
       setIsModalOpen(false);
     } catch (error) {

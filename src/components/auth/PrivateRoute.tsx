@@ -9,5 +9,9 @@ type Props = {
 export default function PrivateRoute({ children }: Props) {
   const { token } = useAuth();
 
-  return token ? <>{children}</> : <Navigate to="/login" />;
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
 }

@@ -3,20 +3,25 @@ import { Users, CheckSquare, Plus } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { Project } from "../api/projects";
 import { getProjectById, updateProject } from "../api/projects";
-import { getProjectMembers } from "../api/members";
+import { addProjectMember, getProjectMembers } from "../api/members";
 import { getUserById, User as UserType, getAllUsers } from "../api/users";
 import MemberCard from "../components/members/MemberCard";
 import TaskCard from "../components/tasks/TaskCard";
 import ProjectHeader from "../components/projects/ProjectHeader";
 import ProjectInfo from "../components/projects/ProjectInfo";
 import AddMemberModal from "../components/projects/AddMemberModal";
+import CreateTaskModal from "../components/tasks/CreateTaskModal";
 import NotificationMessages from "../components/projects/NotificationMessages";
+import { getTaskByProjectId, Task, createTask } from "../api/tasks";
+import { deleteTask, updateTask } from "../api/tasks";
 
 interface ProjectState {
   data: Project | null;
   isLoading: boolean;
   error: string | null;
 }
+
+type MemberWithProjectId = UserType & { projectMemberId: string };
 
 // Componentes memoizados para evitar re-renders innecesarios
 const MemoizedMemberCard = memo(MemberCard);
@@ -29,8 +34,8 @@ export default function ProjectDetails() {
     isLoading: true,
     error: null
   });
-  const [members, setMembers] = useState<UserType[]>([]);
-  const [tasks, setTasks] = useState<{ id: number; title: string; status: string; priority: string }[]>([]);
+  const [members, setMembers] = useState<MemberWithProjectId[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -40,8 +45,9 @@ export default function ProjectDetails() {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<UserType[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>('');
-  const [selectedRole, setSelectedRole] = useState<'OWNER' | 'MEMBER'>('MEMBER');
+  const [selectedRole, setSelectedRole] = useState<'OWNER' | 'MEMBER' | 'MANAGER'>('MEMBER');
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
 
   const loadProjectData = useCallback(async () => {
     if (!id) return;
@@ -57,17 +63,11 @@ export default function ProjectDetails() {
       const membersPromises = projectMembers.map(async (member) => {
         const user = await getUserById(member.userId);
         user.role = member.role;
-        return user;
+        return { ...user, projectMemberId: member.id };
       });
 
       const membersData = await Promise.all(membersPromises);
-      const tasksData = [
-        { id: 1, title: "Diseñar interfaz de usuario", status: "COMPLETED", priority: "HIGH" },
-        { id: 2, title: "Implementar autenticación", status: "IN_PROGRESS", priority: "HIGH" },
-        { id: 3, title: "Configurar base de datos", status: "COMPLETED", priority: "MEDIUM" },
-        { id: 4, title: "Escribir documentación", status: "PENDING", priority: "LOW" },
-        { id: 5, title: "Pruebas de integración", status: "IN_PROGRESS", priority: "MEDIUM" }
-      ];
+      const tasksData = await getTaskByProjectId(id);
 
       setProjectState({ data: projectData, isLoading: false, error: null });
       setNewName(projectData.name);
@@ -131,13 +131,13 @@ export default function ProjectDetails() {
   }, [members]);
 
   const handleAddMember = useCallback(async () => {
-    if (!selectedUser) {
+    if (!selectedUser || !id) {
       setError('Por favor, selecciona un usuario');
       return;
     }
 
     try {
-      // Aquí iría la llamada a la API para añadir el miembro
+      await addProjectMember(id, selectedUser, selectedRole);
       setIsAddMemberModalOpen(false);
       setSuccessMessage('Miembro añadido correctamente');
       loadProjectData();
@@ -145,6 +145,51 @@ export default function ProjectDetails() {
       setError('Error al añadir el miembro');
     }
   }, [selectedUser, selectedRole, loadProjectData]);
+
+  const handleTaskDelete = async (id: string) => {
+    try {
+      await deleteTask(id);
+      loadProjectData();
+    } catch (error) {
+      setError('Error al eliminar la tarea');
+    }
+  };
+
+  const handleTaskEdit = async (taskId: string, title: string, description: string, status: Task['status'], priority: Task['priority'], dueDate: string, assignedTo: string, projectId: string) => {
+    try {
+      await updateTask(taskId, { title, description, status, priority, dueDate, assigneeId: assignedTo, projectId });
+      loadProjectData();
+    } catch (error) {
+      setError('Error al editar la tarea');
+    }
+  };
+
+  const handleTaskComplete = async (taskId: string) => {
+    try {
+      await updateTask(taskId, { status: 'FINALIZADA' });
+      loadProjectData();
+    } catch (error) {
+      setError('Error al completar la tarea');
+    }
+  };
+
+  const handleCreateTask = async (title: string, description: string, status: string, priority: string, dueDate: string, assignedTo: string, projectId: string) => {
+    try {
+      await createTask({
+        title,
+        description,
+        status: status as Task['status'],
+        priority: priority as Task['priority'],
+        dueDate,
+        assigneeId: assignedTo,
+        projectId: id || ''
+      });
+      setSuccessMessage("Tarea creada con éxito");
+      loadProjectData();
+    } catch (error) {
+      setError("Error al crear la tarea");
+    }
+  };
 
   // Efectos para limpiar mensajes
   useEffect(() => {
@@ -251,7 +296,11 @@ export default function ProjectDetails() {
             <div className="p-6 max-h-[calc(100vh-400px)] overflow-y-auto">
               <div className="space-y-4">
                 {members.map((member) => (
-                  <MemoizedMemberCard key={member.id} member={member} />
+                  <MemoizedMemberCard 
+                    key={member.id} 
+                    member={member} 
+                    onMemberDeleted={loadProjectData}
+                  />
                 ))}
               </div>
             </div>
@@ -270,7 +319,13 @@ export default function ProjectDetails() {
                     <p className="text-slate-600 text-sm">{tasks.length} tareas en total</p>
                   </div>
                 </div>
-                <button className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors duration-200">
+                <button 
+                  onClick={() => {
+                    setIsCreateTaskModalOpen(true);
+                    loadAvailableUsers();
+                  }}
+                  className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors duration-200"
+                >
                   <Plus size={20} className="text-slate-600" />
                 </button>
               </div>
@@ -279,7 +334,15 @@ export default function ProjectDetails() {
             <div className="p-6 max-h-[calc(100vh-400px)] overflow-y-auto">
               <div className="space-y-4">
                 {tasks.map((task) => (
-                  <MemoizedTaskCard key={task.id} task={task} />
+                  <MemoizedTaskCard 
+                    key={task.id} 
+                    task={task}
+                    onDelete={handleTaskDelete}
+                    onEdit={handleTaskEdit}
+                    onComplete={handleTaskComplete}
+                    availableUsers={availableUsers}
+                    availableProjects={[projectState.data]}
+                  />
                 ))}
               </div>
             </div>
@@ -296,6 +359,15 @@ export default function ProjectDetails() {
           onUserChange={setSelectedUser}
           onRoleChange={setSelectedRole}
           isLoading={isLoadingUsers}
+        />
+
+        <CreateTaskModal
+          isOpen={isCreateTaskModalOpen}
+          onClose={() => setIsCreateTaskModalOpen(false)}
+          onSubmit={handleCreateTask}
+          loading={false}
+          availableUsers={availableUsers}
+          availableProjects={[projectState.data]}
         />
 
         {/* Footer */}

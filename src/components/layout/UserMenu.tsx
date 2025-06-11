@@ -37,7 +37,6 @@ export default function UserMenu({ user }: UserMenuProps) {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const menuItems = [
-    { icon: User, label: 'Perfil', action: () => {} },
     { icon: LogOut, label: 'Cerrar sesión', action: () => {handleLogout()}, danger: true }
   ];
 

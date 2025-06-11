@@ -17,6 +17,8 @@ interface UserGridProps {
 export default function UserGrid({ users, loading, searchTerm, isVisible, onDelete, onEdit }: UserGridProps) {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>('username');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   const filteredUsers = users.filter(user => {
     const searchLower = searchTerm.toLowerCase();
@@ -42,6 +44,19 @@ export default function UserGrid({ users, loading, searchTerm, isVisible, onDele
     if (editingUser) {
       await onEdit(editingUser.id, userData);
       setEditingUser(null);
+    }
+  };
+
+  const handleDeleteClick = (userId: string) => {
+    setUserToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (userToDelete) {
+      await onDelete(userToDelete);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
     }
   };
 
@@ -159,7 +174,7 @@ export default function UserGrid({ users, loading, searchTerm, isVisible, onDele
                           <Pencil className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={() => onDelete(user.id)}
+                          onClick={() => handleDeleteClick(user.id)}
                           className="text-slate-400 hover:text-red-600 transition-colors duration-200"
                         >
                           <Trash2 className="h-5 w-5" />
@@ -181,6 +196,36 @@ export default function UserGrid({ users, loading, searchTerm, isVisible, onDele
           onEdit={handleEditSubmit}
           user={editingUser}
         />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteDialogOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">¿Eliminar usuario?</h3>
+            <p className="text-slate-600 mb-6">
+              Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este usuario?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setDeleteDialogOpen(false);
+                  setUserToDelete(null);
+                }}
+                className="px-4 py-2 text-red-500 hover:text-red-600 bg-red-100 font-medium transition-colors duration-200"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
