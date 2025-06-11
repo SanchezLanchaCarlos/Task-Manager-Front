@@ -7,10 +7,10 @@ Interfaz web para gestionar tareas, desarrollada con **React** + **Vite**, consu
 ## 💻 Tecnologías
 
 - **Framework**: React (con Vite)
-- **Lenguajes**: JavaScript o TypeScript (según tu implementación)
-- **Gestión de paquetes**: npm o yarn
-- **Estilo**: CSS / SCSS / Tailwind / Material UI (ajusta según tu elección)
-- **Herramientas**: ESLint, Prettier (si están configuradas)
+- **Lenguajes**: TypeScript (según tu implementación)
+- **Gestión de paquetes**: npm
+- **Estilo**: Tailwind
+- **Herramientas**: ESLint
 
 ---
 
@@ -19,7 +19,7 @@ Interfaz web para gestionar tareas, desarrollada con **React** + **Vite**, consu
 Asegúrate de tener instalado:
 
 - Node.js **≥18**
-- npm (viene con Node) o yarn
+- npm (viene con Node)
 
 ---
 
