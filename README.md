@@ -3,7 +3,6 @@
 
 ## 📄 `README.md` – Frontend (`Task-Manager-Front`)
 
-```markdown
 # Task Manager Frontend
 
 Interfaz de usuario para la aplicación Task Manager. Desarrollada con **React**, **TypeScript**, **Vite** y **TailwindCSS**, conectada a una API REST segura con JWT.
@@ -46,7 +45,7 @@ src/
 
 ## ⚙️ Instalación
 
-```bash
+bash
 git clone https://github.com/SanchezLanchaCarlos/Task-Manager-Front.git
 cd Task-Manager-Front
 npm install
@@ -63,41 +62,41 @@ npm run lint      # Linter
 
 🔐 Autenticación
 
-    • El JWT recibido al hacer login se almacena en localStorage
+• El JWT recibido al hacer login se almacena en localStorage
 
-    • Se incluye en cada request con Axios como Authorization: Bearer <token>
+• Se incluye en cada request con Axios como Authorization: Bearer <token>
 
-    • Rutas protegidas mediante PrivateRoute u otro HOC personalizado
+• Rutas protegidas mediante PrivateRoute u otro HOC personalizado
 
 🧭 Páginas principales
 
-    • /login – Inicio de sesión
+• /login – Inicio de sesión
 
-    • /register – Registro de nuevos usuarios
+• /register – Registro de nuevos usuarios
 
-    • / – Dashboard de bienvenida
+• / – Dashboard de bienvenida
 
-    • /users – Gestión de usuarios (si eres admin)
+• /users – Gestión de usuarios (si eres admin)
 
-    • /projects – Lista y gestión de proyectos
+• /projects – Lista y gestión de proyectos
 
-    • /projects/:id – Detalles del proyecto (miembros, tareas)
+• /projects/:id – Detalles del proyecto (miembros, tareas)
 
-    • /tasks – Lista y edición de tareas
+• /tasks – Lista y edición de tareas
 
 🧰 Mejores prácticas implementadas
 
-    • Componentes reutilizables
+• Componentes reutilizables
 
-    • Separación de lógica y presentación
+• Separación de lógica y presentación
 
-    • Control de rutas privadas
+• Control de rutas privadas
 
-    • Hooks personalizados para autenticación
+• Hooks personalizados para autenticación
 
-    • Estilos responsive con Tailwind
+• Estilos responsive con Tailwind
 
-    • Axios configurado globalmente
+• Axios configurado globalmente
 
 🧑 Autor
 
