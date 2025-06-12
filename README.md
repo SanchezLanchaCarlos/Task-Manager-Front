@@ -20,16 +20,13 @@ Interfaz de usuario para la aplicación Task Manager. Desarrollada con **React**
 
 ## 📁 Estructura principal
 
-src/
-├── components/ # Reutilizables: botones, inputs, modales...
-├── pages/ # Vistas principales (Login, Registro, etc.)
-├── routes/ # Definición de rutas
-├── services/ # Axios y lógica de API
-├── context/ # Contextos globales (auth, user, etc.)
-├── hooks/ # Hooks personalizados
-├── utils/ # Funciones auxiliares
-├── App.tsx # Componente raíz
-└── main.tsx # Entrada principal
+    src/
+    ├── components/ # Reutilizables: botones, inputs, modales...
+    ├── pages/ # Vistas principales (Login, Registro, etc.)
+    ├── api/ # Axios y lógica de API
+    ├── context/ # Contextos globales (auth, user, etc.)
+    ├── App.tsx # Componente raíz
+    └── main.tsx # Entrada principal
 
 ---
 
@@ -64,45 +61,45 @@ npm run lint      # Linter
 
 ## 🔐 Autenticación
 
-• El JWT recibido al hacer login se almacena en localStorage
+* El JWT recibido al hacer login se almacena en localStorage
 
-• Se incluye en cada request con Axios como Authorization: Bearer <token>
+* Se incluye en cada request con Axios como Authorization: Bearer <token>
 
-• Rutas protegidas mediante PrivateRoute u otro HOC personalizado
+* Rutas protegidas mediante PrivateRoute u otro HOC personalizado
 
 ---
 
 ## 🧭 Páginas principales
 
-• /login – Inicio de sesión
+* /login – Inicio de sesión
 
-• /register – Registro de nuevos usuarios
+* /register – Registro de nuevos usuarios
 
-• / – Dashboard de bienvenida
+* / – Dashboard de bienvenida
 
-• /users – Gestión de usuarios (si eres admin)
+* /users – Gestión de usuarios (si eres admin)
 
-• /projects – Lista y gestión de proyectos
+* /projects – Lista y gestión de proyectos
 
-• /projects/:id – Detalles del proyecto (miembros, tareas)
+* /projects/:id – Detalles del proyecto (miembros, tareas)
 
-• /tasks – Lista y edición de tareas
+* /tasks – Lista y edición de tareas
 
 ---
 
 ## 🧰 Mejores prácticas implementadas
 
-• Componentes reutilizables
+* Componentes reutilizables
 
-• Separación de lógica y presentación
+* Separación de lógica y presentación
 
-• Control de rutas privadas
+* Control de rutas privadas
 
-• Hooks personalizados para autenticación
+* Hooks personalizados para autenticación
 
-• Estilos responsive con Tailwind
+* Estilos responsive con Tailwind
 
-• Axios configurado globalmente
+* Axios configurado globalmente
 
 ---
 
