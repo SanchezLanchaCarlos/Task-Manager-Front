@@ -1,8 +1,5 @@
 
 ---
-
-## 📄 `README.md` – Frontend (`Task-Manager-Front`)
-
 # Task Manager Frontend
 
 Interfaz de usuario para la aplicación Task Manager. Desarrollada con **React**, **TypeScript**, **Vite** y **TailwindCSS**, conectada a una API REST segura con JWT.
@@ -45,22 +42,27 @@ src/
 
 ## ⚙️ Instalación
 
-bash
-git clone https://github.com/SanchezLanchaCarlos/Task-Manager-Front.git
-cd Task-Manager-Front
-npm install
+    git clone https://github.com/SanchezLanchaCarlos/Task-Manager-Front.git
+    cd Task-Manager-Front
+    npm install
 
-🧬 Configuración
+---
+
+## 🧬 Configuración
 Crea un archivo .env en la raíz del proyecto con:
 VITE_API_BASE_URL=http://localhost:8080/api
 
-▶️ Scripts
+---
+
+## ▶️ Scripts
 npm run dev       # Desarrollo
 npm run build     # Producción
 npm run preview   # Previsualización local
 npm run lint      # Linter
 
-🔐 Autenticación
+---
+
+## 🔐 Autenticación
 
 • El JWT recibido al hacer login se almacena en localStorage
 
@@ -68,7 +70,9 @@ npm run lint      # Linter
 
 • Rutas protegidas mediante PrivateRoute u otro HOC personalizado
 
-🧭 Páginas principales
+---
+
+## 🧭 Páginas principales
 
 • /login – Inicio de sesión
 
@@ -84,7 +88,9 @@ npm run lint      # Linter
 
 • /tasks – Lista y edición de tareas
 
-🧰 Mejores prácticas implementadas
+---
+
+## 🧰 Mejores prácticas implementadas
 
 • Componentes reutilizables
 
@@ -98,6 +104,8 @@ npm run lint      # Linter
 
 • Axios configurado globalmente
 
-🧑 Autor
+---
+
+## 🧑 Autor
 
 Carlos Sánchez – @SanchezLanchaCarlos
