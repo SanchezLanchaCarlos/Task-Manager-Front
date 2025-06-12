@@ -1,6 +1,6 @@
 # Task Manager Frontend
 
-Interfaz web para gestionar tareas, desarrollada con **React** + **Vite**, consumiendo la API REST del backend.
+Interfaz web para gestionar usuarios, proyectos y tareas, desarrollada con **React** + **Vite**, consumiendo la API REST del backend.
 
 ---
 
