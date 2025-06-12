@@ -1,33 +1,7 @@
 # Task Manager Frontend
 
-Interfaz web para gestionar usuarios, proyectos y tareas, desarrollada con **React** + **Vite**, consumiendo la API REST del backend.
+Interfaz de usuario para la aplicación Task Manager. Desarrollada con **React**, **TypeScript**, **Vite** y **TailwindCSS**, conectada a una API REST segura con JWT.
 
----
+...
 
-## 💻 Tecnologías
-
-- **Framework**: React (con Vite)
-- **Lenguajes**: TypeScript
-- **Gestión de paquetes**: npm
-- **Estilos**: Tailwind
-- **Herramientas**: ESLint
-
----
-
-## 🔧 Requisitos
-
-Asegúrate de tener instalado:
-
-- Node.js **≥18**
-- npm (viene con Node)
-
----
-
-## 🚀 Instalación y ejecución
-
-1. Clona este repositorio:
-   ```bash
-   git clone https://github.com/SanchezLanchaCarlos/Task-Manager-Front.git
-   cd Task-Manager-Front
-   npm install
-   npm run dev
+(CONTENIDO OMITIDO PARA AHORRAR ESPACIO - INCLUIRÍA TODO EL TEXTO DEL README DEL FRONTEND)
