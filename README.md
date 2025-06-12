@@ -24,6 +24,7 @@ Interfaz de usuario para la aplicación Task Manager. Desarrollada con **React**
     ├── components/ # Reutilizables: botones, inputs, modales...
     ├── pages/ # Vistas principales (Login, Registro, etc.)
     ├── api/ # Axios y lógica de API
+    ├── assets/ # Recursos gráficos (imágenes, etc)
     ├── context/ # Contextos globales (auth, user, etc.)
     ├── App.tsx # Componente raíz
     └── main.tsx # Entrada principal
