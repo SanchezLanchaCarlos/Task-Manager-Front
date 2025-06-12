@@ -7,9 +7,9 @@ Interfaz web para gestionar tareas, desarrollada con **React** + **Vite**, consu
 ## 💻 Tecnologías
 
 - **Framework**: React (con Vite)
-- **Lenguajes**: TypeScript (según tu implementación)
+- **Lenguajes**: TypeScript
 - **Gestión de paquetes**: npm
-- **Estilo**: Tailwind
+- **Estilos**: Tailwind
 - **Herramientas**: ESLint
 
 ---
@@ -30,3 +30,4 @@ Asegúrate de tener instalado:
    git clone https://github.com/SanchezLanchaCarlos/Task-Manager-Front.git
    cd Task-Manager-Front
    npm install
+   npm run dev
